@@ -1,0 +1,333 @@
+// ─── Variables ─────────────────────────────────────────────────────────────
+$bg-page: #111316;
+$bg-card: #1a1d22;
+$bg-card-inner: #1e2128;
+$bg-dropzone: #1c1f27;
+$border-subtle: rgba(255, 255, 255, 0.07);
+$border-dropzone: rgba(255, 255, 255, 0.15);
+$red-accent: #d20d3d;
+$red-accent-hover: #f01348;
+$text-primary: #f0f0f0;
+$text-secondary: rgba(255, 255, 255, 0.5);
+$text-muted: rgba(255, 255, 255, 0.3);
+$radius-card: 14px;
+$radius-inner: 10px;
+$radius-btn: 8px;
+
+// ─── Page Layout ────────────────────────────────────────────────────────────
+.home {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $bg-page;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 1.5rem;
+}
+
+.home__container {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+// ─── Header ─────────────────────────────────────────────────────────────────
+.home__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+
+.home__header-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-top: 2px;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.home__header-text {
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: $text-primary;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin-top: 0.35rem;
+    font-size: 0.875rem;
+    color: $text-secondary;
+  }
+}
+
+.home__header-highlight {
+  color: $red-accent;
+}
+
+// ─── Grid ────────────────────────────────────────────────────────────────────
+.home__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+// ─── Card ────────────────────────────────────────────────────────────────────
+.home__card {
+  background-color: $bg-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-card;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &--left {
+    // stretch to full grid row height
+    height: 100%;
+    min-height: 280px;
+  }
+}
+
+.home__card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.home__card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  &--red {
+    background-color: rgba($red-accent, 0.12);
+  }
+}
+
+.home__card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.home__card-subtitle {
+  font-size: 0.78rem;
+  color: $text-secondary;
+  margin-top: 0.15rem;
+}
+
+// ─── Textarea ────────────────────────────────────────────────────────────────
+.home__textarea-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.home__textarea {
+  flex: 1;
+  width: 100%;
+  background-color: $bg-card-inner;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-inner;
+  color: $text-primary;
+  font-family: inherit;
+  font-size: 0.875rem;
+  padding: 0.875rem 1rem;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s ease;
+  min-height: 185px;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    border-color: rgba($red-accent, 0.5);
+  }
+
+  &--short {
+    min-height: 100px;
+    flex: unset;
+    height: 100px;
+  }
+}
+
+.home__char-count {
+  font-size: 0.75rem;
+  color: $text-muted;
+  align-self: flex-start;
+}
+
+// ─── Custom Scrollbar ─────────────────────────────────────────────────────────
+.home__textarea {
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba($red-accent, 0.4) transparent;
+
+  // Chrome / Edge / Safari
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba($red-accent, 0.35);
+    border-radius: 10px;
+    transition: background-color 0.2s ease;
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    background-color: rgba($red-accent, 0.65);
+  }
+
+  &:focus::-webkit-scrollbar-thumb {
+    background-color: $red-accent;
+  }
+}
+
+// ─── Dropzone ────────────────────────────────────────────────────────────────
+.home__dropzone {
+  border: 1.5px dashed $border-dropzone;
+  border-radius: $radius-inner;
+  background-color: $bg-dropzone;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.85rem 1rem;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.home__dropzone-icon {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0.25rem;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.home__dropzone-text {
+  font-size: 0.85rem;
+  color: $text-primary;
+  font-weight: 500;
+}
+
+.home__dropzone-or {
+  font-size: 0.78rem;
+  color: $text-secondary;
+}
+
+.home__upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.5rem;
+  background-color: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: $radius-btn;
+  color: $text-primary;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+  margin-top: 0.2rem;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.home__dropzone-hint {
+  font-size: 0.72rem;
+  color: $text-muted;
+  margin-top: 0.2rem;
+}
+
+// ─── Right Column ────────────────────────────────────────────────────────────
+.home__right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// ─── Generate Button ─────────────────────────────────────────────────────────
+.home__generate-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.5rem;
+  background-color: $red-accent;
+  border: none;
+  border-radius: $radius-btn;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+  letter-spacing: 0.01em;
+
+  &:hover {
+    background-color: $red-accent-hover;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.home__generate-btn-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+// ─── Responsive ──────────────────────────────────────────────────────────────
+@media (max-width: 700px) {
+  .home__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home__card--left {
+    min-height: 260px;
+  }
+}

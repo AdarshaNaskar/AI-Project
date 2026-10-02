@@ -1,5 +1,4 @@
 const { GoogleGenAI } = require("@google/genai");
-const { z } = require("zod");
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GENAI_API_KEY,
@@ -18,6 +17,7 @@ const interviewReportSchema = {
 
     technicalQuestions: {
       type: "array",
+      minItems: 5,
       items: {
         type: "object",
         properties: {
@@ -37,6 +37,7 @@ const interviewReportSchema = {
 
     behavioralQuestions: {
       type: "array",
+      minItems: 5,
       items: {
         type: "object",
         properties: {
@@ -92,6 +93,11 @@ const interviewReportSchema = {
         required: ["day", "focus", "tasks"],
       },
     },
+
+    title:{
+      type:"string",
+      description:"The title of the job for which the interview report is generated"
+    }
   },
 
   required: [
@@ -100,6 +106,7 @@ const interviewReportSchema = {
     "behavioralQuestions",
     "skillGaps",
     "preparationPlan",
+    "title"
   ],
 };
 

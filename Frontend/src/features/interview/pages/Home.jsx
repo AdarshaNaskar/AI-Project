@@ -1,6 +1,7 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
+import { useState, useRef } from "react";
 import "../styles/Home.scss";
+import { useInterview } from "../hook/useInterview";
+import { useNavigate } from "react-router";
 
 // ─── Sub-components (UI Layer) ────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ const PageHeader = () => (
   </div>
 );
 
-const JobDescriptionCard = () => (
+const JobDescriptionCard = ({ onChange }) => (
   <div className="home__card home__card--left">
     <div className="home__card-header">
       <div className="home__card-icon home__card-icon--red">
@@ -62,6 +63,9 @@ const JobDescriptionCard = () => (
 
     <div className="home__textarea-wrapper">
       <textarea
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
         id="jobDescription"
         name="jobDescription"
         className="home__textarea"
@@ -72,7 +76,7 @@ const JobDescriptionCard = () => (
   </div>
 );
 
-const ResumeUploadCard = () => (
+const ResumeUploadCard = ({ resumeInputRef }) => (
   <div className="home__card home__card--resume">
     <div className="home__card-header">
       <div className="home__card-icon home__card-icon--red">
@@ -131,6 +135,7 @@ const ResumeUploadCard = () => (
         Upload resume
       </label>
       <input
+        ref={resumeInputRef}
         hidden
         type="file"
         name="resume"
@@ -143,7 +148,7 @@ const ResumeUploadCard = () => (
   </div>
 );
 
-const SelfDescriptionCard = () => (
+const SelfDescriptionCard = ({ onChange }) => (
   <div className="home__card home__card--self">
     <div className="home__card-header">
       <div className="home__card-icon home__card-icon--red">
@@ -172,6 +177,7 @@ const SelfDescriptionCard = () => (
 
     <div className="home__textarea-wrapper">
       <textarea
+        onChange={(e) => onChange(e.target.value)}
         id="selfDescription"
         name="selfDescription"
         className="home__textarea home__textarea--short"
@@ -183,8 +189,8 @@ const SelfDescriptionCard = () => (
   </div>
 );
 
-const GenerateButton = () => (
-  <button className="home__generate-btn" type="button">
+const GenerateButton = ({ onClick }) => (
+  <button onClick={onClick} className="home__generate-btn" type="button">
     Generate Preparation Report
     <span className="home__generate-btn-arrow">{"→"}</span>
   </button>
@@ -193,6 +199,41 @@ const GenerateButton = () => (
 // ─── Page Component ───────────────────────────────────────────────────────────
 
 const Home = () => {
+  const { loading, reportsLoading, generateReport, reports } = useInterview();
+  const resumeInputRef = useRef();
+  const [jobDescription, setJobDescription] = useState("");
+  const [selfDescription, setSelfDescription] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleGenerateReport = async () => {
+    const resumeFile = resumeInputRef.current.files[0];
+    const data = await generateReport({
+      jobDescription,
+      selfDescription,
+      resumeFile,
+    });
+    navigate(`/interview/${data._id}`);
+  };
+
+  if (loading) {
+    return (
+      <main className="loading-screen">
+        <div className="loading-screen__spinner">
+          <div className="loading-screen__ring" />
+          <div className="loading-screen__ring-inner" />
+          <div className="loading-screen__dot" />
+        </div>
+        <p className="loading-screen__text">Loading your interview plan…</p>
+        <div className="loading-screen__dots">
+          <span />
+          <span />
+          <span />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="home">
       <div className="home__container">
@@ -200,15 +241,45 @@ const Home = () => {
 
         <div className="home__grid">
           {/* Left Column */}
-          <JobDescriptionCard />
+          <JobDescriptionCard onChange={setJobDescription} />
 
           {/* Right Column */}
           <div className="home__right-col">
-            <ResumeUploadCard />
-            <SelfDescriptionCard />
-            <GenerateButton />
+            <ResumeUploadCard resumeInputRef={resumeInputRef} />
+            <SelfDescriptionCard onChange={setSelfDescription} />
+            <GenerateButton onClick={handleGenerateReport} />
           </div>
         </div>
+        {/* Recent Reports List */}
+        {(reportsLoading || reports.length > 0) && (
+          <section className="recent-reports">
+            <h2>My Recent Interview Plans</h2>
+            {reportsLoading ? (
+              <p className="report-list--loading">Loading recent reports…</p>
+            ) : (
+              <ul className="report-list">
+                {reports.map((report) => (
+                  <li
+                    key={report._id}
+                    className="report-item"
+                    onClick={() => navigate(`/interview/${report._id}`)}
+                  >
+                    <h3>{report.title || "Untitled Position"}</h3>
+                    <p className="report-meta">
+                      Generated on{" "}
+                      {new Date(report.createdAt).toLocaleDateString()}
+                    </p>
+                    <p
+                      className={`match-score ${report.matchScore >= 80 ? `score--high` : report.matchScore >= 60 ? `score--medium` : `score--low`}`}
+                    >
+                      Match Score: {report.matchScore}%
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
       </div>
     </main>
   );

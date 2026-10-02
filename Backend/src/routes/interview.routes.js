@@ -17,4 +17,18 @@ interviewRouter.post(
   interviewController.generateInterViewReportController,
 );
 
+/**
+ * @route GET /api/interview/:interviewId
+ * @description Get interview report by interviewId
+ * @access private
+ */
+interviewRouter.get("/report/:interviewId",authMiddleware.authUser,interviewController.getInterviewReportByIdController)
+
+/**
+ * @route GET /api/interview/
+ * @description Get all interview reports by logged in user
+ * @access private
+ */
+interviewRouter.get("/",authMiddleware.authUser,interviewController.getAllInterviewReportsController)
+
 module.exports = interviewRouter;

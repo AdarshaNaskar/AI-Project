@@ -22,7 +22,6 @@ export const generateInterviewReport = async ({
   resumeFile,
 }) => {
   const formData = new FormData();
-
   formData.append("jobDescription", jobDescription);
   formData.append("selfDescription", selfDescription);
 
@@ -30,28 +29,13 @@ export const generateInterviewReport = async ({
     formData.append("resume", resumeFile);
   }
 
-  try {
-    const response = await api.post("/api/interview/", formData);
+  const response = await api.post("/api/interview/", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
-    return response.data;
-  } catch (error) {
-    alert(
-      JSON.stringify(
-        {
-          message: error.message,
-          code: error.code,
-          status: error.response?.status || null,
-          response: error.response?.data || null,
-          url: error.config?.url || null,
-          baseURL: error.config?.baseURL || null,
-        },
-        null,
-        2
-      )
-    );
-
-    throw error;
-  }
+  return response.data;
 };
 
 /**

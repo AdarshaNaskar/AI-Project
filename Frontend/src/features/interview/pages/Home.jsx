@@ -30,7 +30,7 @@ const PageHeader = () => (
   </div>
 );
 
-const JobDescriptionCard = ({ onChange }) => (
+const JobDescriptionCard = ({ value, onChange }) => (
   <div className="home__card home__card--left">
     <div className="home__card-header">
       <div className="home__card-icon home__card-icon--red">
@@ -63,6 +63,7 @@ const JobDescriptionCard = ({ onChange }) => (
 
     <div className="home__textarea-wrapper">
       <textarea
+        value={value}
         onChange={(e) => {
           onChange(e.target.value);
         }}
@@ -70,13 +71,14 @@ const JobDescriptionCard = ({ onChange }) => (
         name="jobDescription"
         className="home__textarea"
         placeholder="Enter the job description here..."
+        maxLength={3000}
       />
-      <span className="home__char-count">0/3000</span>
+      <span className="home__char-count">{value.length}/3000</span>
     </div>
   </div>
 );
 
-const ResumeUploadCard = ({ resumeInputRef }) => (
+const ResumeUploadCard = ({ resumeInputRef, selectedFile, onFileChange }) => (
   <div className="home__card home__card--resume">
     <div className="home__card-header">
       <div className="home__card-icon home__card-icon--red">
@@ -128,11 +130,13 @@ const ResumeUploadCard = ({ resumeInputRef }) => (
           />
         </svg>
       </div>
-      <p className="home__dropzone-text">Drag and drop your resume here</p>
+      <p className="home__dropzone-text">
+        {selectedFile ? `Selected: ${selectedFile.name}` : "Drag and drop your resume here"}
+      </p>
       <span className="home__dropzone-or">or</span>
 
       <label htmlFor="resume" className="home__upload-btn">
-        Upload resume
+        {selectedFile ? "Change resume" : "Upload resume"}
       </label>
       <input
         ref={resumeInputRef}
@@ -141,6 +145,7 @@ const ResumeUploadCard = ({ resumeInputRef }) => (
         name="resume"
         id="resume"
         accept=".pdf,.doc,.docx"
+        onChange={onFileChange}
       />
 
       <span className="home__dropzone-hint">PDF, DOC, DOCX (Max 3MB)</span>
@@ -148,7 +153,7 @@ const ResumeUploadCard = ({ resumeInputRef }) => (
   </div>
 );
 
-const SelfDescriptionCard = ({ onChange }) => (
+const SelfDescriptionCard = ({ value, onChange }) => (
   <div className="home__card home__card--self">
     <div className="home__card-header">
       <div className="home__card-icon home__card-icon--red">
@@ -177,6 +182,7 @@ const SelfDescriptionCard = ({ onChange }) => (
 
     <div className="home__textarea-wrapper">
       <textarea
+        value={value}
         onChange={(e) => onChange(e.target.value)}
         id="selfDescription"
         name="selfDescription"
@@ -184,14 +190,14 @@ const SelfDescriptionCard = ({ onChange }) => (
         placeholder="Enter self description..."
         maxLength={2000}
       />
-      <span className="home__char-count">0/2000</span>
+      <span className="home__char-count">{value.length}/2000</span>
     </div>
   </div>
 );
 
-const GenerateButton = ({ onClick }) => (
-  <button onClick={onClick} className="home__generate-btn" type="button">
-    Generate Preparation Report
+const GenerateButton = ({ onClick, disabled }) => (
+  <button onClick={onClick} className="home__generate-btn" type="button" disabled={disabled}>
+    {disabled ? "Generating..." : "Generate Preparation Report"}
     <span className="home__generate-btn-arrow">{"→"}</span>
   </button>
 );
@@ -201,19 +207,76 @@ const GenerateButton = ({ onClick }) => (
 const Home = () => {
   const { loading, reportsLoading, generateReport, reports } = useInterview();
   const resumeInputRef = useRef();
-  const [jobDescription, setJobDescription] = useState("");
-  const [selfDescription, setSelfDescription] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  
+  // Restore draft state from sessionStorage if mobile browser reloads on file picker
+  const [jobDescription, setJobDescription] = useState(() => {
+    return sessionStorage.getItem("draft_job_description") || "";
+  });
+  const [selfDescription, setSelfDescription] = useState(() => {
+    return sessionStorage.getItem("draft_self_description") || "";
+  });
 
   const navigate = useNavigate();
 
+  const handleJobDescriptionChange = (val) => {
+    setJobDescription(val);
+    sessionStorage.setItem("draft_job_description", val);
+    if (errorMessage) setErrorMessage("");
+  };
+
+  const handleSelfDescriptionChange = (val) => {
+    setSelfDescription(val);
+    sessionStorage.setItem("draft_self_description", val);
+    if (errorMessage) setErrorMessage("");
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 3 * 1024 * 1024) {
+        setErrorMessage("File size exceeds 3MB limit. Please upload a smaller file.");
+        e.target.value = "";
+        setSelectedFile(null);
+        return;
+      }
+      setSelectedFile(file);
+      if (errorMessage) setErrorMessage("");
+    }
+  };
+
   const handleGenerateReport = async () => {
-    const resumeFile = resumeInputRef.current.files[0];
+    const resumeFile = selectedFile || resumeInputRef.current?.files?.[0];
+
+    if (!jobDescription.trim()) {
+      setErrorMessage("Please enter the Job Description.");
+      return;
+    }
+    if (!resumeFile) {
+      setErrorMessage("Please upload your Resume.");
+      return;
+    }
+    if (!selfDescription.trim()) {
+      setErrorMessage("Please enter a brief Self Description.");
+      return;
+    }
+
+    setErrorMessage("");
     const data = await generateReport({
       jobDescription,
       selfDescription,
       resumeFile,
     });
-    navigate(`/interview/${data._id}`);
+
+    if (data && data._id) {
+      // Clear saved drafts on successful submission
+      sessionStorage.removeItem("draft_job_description");
+      sessionStorage.removeItem("draft_self_description");
+      navigate(`/interview/${data._id}`);
+    } else {
+      setErrorMessage("Failed to generate report. Please verify your connection or try again.");
+    }
   };
 
   if (loading) {
@@ -239,15 +302,41 @@ const Home = () => {
       <div className="home__container">
         <PageHeader />
 
+        {errorMessage && (
+          <div
+            style={{
+              padding: "0.75rem 1rem",
+              backgroundColor: "rgba(210, 13, 61, 0.15)",
+              border: "1px solid #d20d3d",
+              borderRadius: "8px",
+              color: "#ff4d6d",
+              fontSize: "0.875rem",
+              fontWeight: "500",
+            }}
+          >
+            {errorMessage}
+          </div>
+        )}
+
         <div className="home__grid">
           {/* Left Column */}
-          <JobDescriptionCard onChange={setJobDescription} />
+          <JobDescriptionCard
+            value={jobDescription}
+            onChange={handleJobDescriptionChange}
+          />
 
           {/* Right Column */}
           <div className="home__right-col">
-            <ResumeUploadCard resumeInputRef={resumeInputRef} />
-            <SelfDescriptionCard onChange={setSelfDescription} />
-            <GenerateButton onClick={handleGenerateReport} />
+            <ResumeUploadCard
+              resumeInputRef={resumeInputRef}
+              selectedFile={selectedFile}
+              onFileChange={handleFileChange}
+            />
+            <SelfDescriptionCard
+              value={selfDescription}
+              onChange={handleSelfDescriptionChange}
+            />
+            <GenerateButton onClick={handleGenerateReport} disabled={loading} />
           </div>
         </div>
         {/* Recent Reports List */}

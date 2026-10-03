@@ -11,7 +11,11 @@ export const useAuth = () => {
     setloading(true);
     try {
       const data = await login({ email, password });
-      setuser(data.user);
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      setuser(data?.user);
+      return data;
     } catch (err) {
       console.log(err);
     } finally {
@@ -23,7 +27,11 @@ export const useAuth = () => {
     setloading(true);
     try {
       const data = await register({ username, email, password });
-      setuser(data.user);
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      setuser(data?.user);
+      return data;
     } catch (err) {
       console.log(err);
     } finally {
@@ -35,9 +43,12 @@ export const useAuth = () => {
     setloading(true);
     try {
       const data = await logout();
+      localStorage.removeItem("token");
       setuser(null);
     } catch (err) {
       console.log(err);
+      localStorage.removeItem("token");
+      setuser(null);
     } finally {
       setloading(false);
     }

@@ -5,6 +5,8 @@ const api = axios.create({
   withCredentials: true,
 });
 
+alert("API URL: " + import.meta.env.VITE_API_URL);
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -28,11 +30,7 @@ export const generateInterviewReport = async ({
     formData.append("resume", resumeFile);
   }
 
-  const response = await api.post("/api/interview/", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const response = await api.post("/api/interview/", formData);
 
   return response.data;
 };

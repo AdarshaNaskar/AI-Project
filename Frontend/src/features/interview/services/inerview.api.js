@@ -24,15 +24,36 @@ export const generateInterviewReport = async ({
   resumeFile,
 }) => {
   const formData = new FormData();
+
   formData.append("jobDescription", jobDescription);
   formData.append("selfDescription", selfDescription);
+
   if (resumeFile) {
     formData.append("resume", resumeFile);
   }
 
-  const response = await api.post("/api/interview/", formData);
+  try {
+    const response = await api.post("/api/interview/", formData);
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    alert(
+      JSON.stringify(
+        {
+          message: error.message,
+          code: error.code,
+          status: error.response?.status || null,
+          response: error.response?.data || null,
+          url: error.config?.url || null,
+          baseURL: error.config?.baseURL || null,
+        },
+        null,
+        2
+      )
+    );
+
+    throw error;
+  }
 };
 
 /**

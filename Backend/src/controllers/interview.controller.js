@@ -7,32 +7,45 @@ const interviewReportModel = require("../models/interviewReport.model");
  * @description Generate new interview report on the basis of user self description, resume pdf, job description
  */
 async function generateInterViewReportController(req, res) {
-  const resumeContent = await new pdfParse.PDFParse(
-    Uint8Array.from(req.file.buffer),
-  ).getText();
+  try {
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({
+        message: "Please upload a valid resume file (PDF).",
+      });
+    }
 
-  const { selfDescription, jobDescription } = req.body;
+    const resumeContent = await new pdfParse.PDFParse(
+      Uint8Array.from(req.file.buffer),
+    ).getText();
 
-  const interviewReportByAi = await generateInterViewReport({
-    resume: resumeContent.text,
-    selfDescription,
-    jobDescription,
-  });
+    const { selfDescription, jobDescription } = req.body;
 
-  console.log("AI REPORT:", JSON.stringify(interviewReportByAi, null, 2));
+    const interviewReportByAi = await generateInterViewReport({
+      resume: resumeContent.text,
+      selfDescription,
+      jobDescription,
+    });
 
-  const interviewReport = await interviewReportModel.create({
-    user: req.user.id,
-    resume: resumeContent.text,
-    selfDescription,
-    jobDescription,
-    ...interviewReportByAi,
-  });
+    console.log("AI REPORT:", JSON.stringify(interviewReportByAi, null, 2));
 
-  res.status(201).json({
-    message: "Interview Report generated successfully.",
-    interviewReport,
-  });
+    const interviewReport = await interviewReportModel.create({
+      user: req.user.id,
+      resume: resumeContent.text,
+      selfDescription,
+      jobDescription,
+      ...interviewReportByAi,
+    });
+
+    res.status(201).json({
+      message: "Interview Report generated successfully.",
+      interviewReport,
+    });
+  } catch (error) {
+    console.error("Error generating interview report:", error);
+    res.status(500).json({
+      message: error.message || "An error occurred while generating the interview report.",
+    });
+  }
 }
 
 async function getInterviewReportByIdController(req, res) {

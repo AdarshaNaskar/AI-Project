@@ -34,10 +34,14 @@ export const useInterview = () => {
         resumeFile,
       });
       setReport(response.interviewReport);
-      return response.interviewReport;
+      return { success: true, data: response.interviewReport };
     } catch (err) {
-      console.log(err);
-      return null;
+      console.error("generateReport error:", err);
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to generate report. Please try again.";
+      return { success: false, error: message };
     } finally {
       setLoading(false);
     }

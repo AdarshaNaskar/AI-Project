@@ -263,19 +263,19 @@ const Home = () => {
     }
 
     setErrorMessage("");
-    const data = await generateReport({
+    const result = await generateReport({
       jobDescription,
       selfDescription,
       resumeFile,
     });
 
-    if (data && data._id) {
+    if (result.success && result.data?._id) {
       // Clear saved drafts on successful submission
       sessionStorage.removeItem("draft_job_description");
       sessionStorage.removeItem("draft_self_description");
-      navigate(`/interview/${data._id}`);
+      navigate(`/interview/${result.data._id}`);
     } else {
-      setErrorMessage("Failed to generate report. Please verify your connection or try again.");
+      setErrorMessage(result.error || "Failed to generate report. Please try again.");
     }
   };
 
